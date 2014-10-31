@@ -100,6 +100,21 @@ public class TelnetClientExample implements Runnable, TelnetNotificationHandler
             {
                 tc.connect(remoteip, remoteport);
 
+                
+                TerminalTypeOptionHandler ttopt = new TerminalTypeOptionHandler("VT100", false, false, true, false);
+                EchoOptionHandler echoopt = new EchoOptionHandler(true, false, true, false);
+                SuppressGAOptionHandler gaopt = new SuppressGAOptionHandler(true, true, true, true);
+
+                try
+                {
+                    tc.addOptionHandler(ttopt);
+                    tc.addOptionHandler(echoopt);
+                    tc.addOptionHandler(gaopt);
+                }
+                catch (InvalidTelnetOptionException e)
+                {
+                    System.err.println("Error registering option handlers: " + e.getMessage());
+                }
 
                 Thread reader = new Thread (new TelnetClientExample());
                 tc.registerNotifHandler(new TelnetClientExample());
@@ -110,26 +125,22 @@ public class TelnetClientExample implements Runnable, TelnetNotificationHandler
                 byte[] buff = new byte[1024];
                 int ret_read = 0;
 
-                buff = "?".getBytes();
+                buff = "AT Z\\x0D".getBytes();
             	ret_read = buff.length;
-                do
-                {
-                    
-                    try
-                    {
-                            outstr.write(buff, 0 , ret_read);
-                            outstr.flush();
-                    }
-                    catch (IOException e)
-                    {
-                            end_loop = true;
-                    }
-                }
-                while((ret_read > 0) && (end_loop == false));
-
                 try
                 {
-                    tc.disconnect();
+                        outstr.write(buff, 0 , ret_read);
+                        outstr.flush();
+                }
+                catch (IOException e)
+                {
+                        end_loop = true;
+                }
+                
+                try
+                {
+                    Thread.sleep(5000);
+                	tc.disconnect();
                 }
                 catch (IOException e)
                 {

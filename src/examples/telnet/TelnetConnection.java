@@ -1,6 +1,8 @@
 package examples.telnet;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -13,23 +15,21 @@ import org.omg.CORBA.TIMEOUT;
 
 
 
-public class MyTelnet
+public class TelnetConnection
 {
 	
-	private volatile static MyTelnet INSTANCE;
+	private volatile static TelnetConnection INSTANCE;
     
     private final TelnetClient telnetClient = new TelnetClient();
 
     private String mAddress;
     private int mPort;
     
-    
-    private MyTelnet(){};
-    
-    private MyTelnet(String address, int port)
+    private TelnetConnection(String address, int port)
     {
         // Initialize the connection
         int TIMEOUT = 3;
+//    	getTelnetClient().setConnectTimeout(TIMEOUT);
     	telnetClient.setConnectTimeout(TIMEOUT);
         
     	this.mAddress = address;
@@ -38,7 +38,7 @@ public class MyTelnet
     	if(!telnetClient.isConnected()){
 	    	do{
 	    		try {
-					telnetClient.connect(this.mAddress, this.mPort);
+	    			telnetClient.connect(this.mAddress, this.mPort);
 	    		} catch (IOException e) {
 					// TODO Auto-generated catch block
 					try {
@@ -58,10 +58,10 @@ public class MyTelnet
     public static TelnetClient getConnection(String address, int port)
     {
     	if(INSTANCE == null){
-            synchronized(MyTelnet.class){
+            synchronized(TelnetConnection.class){
                 //double checking Singleton instance
                 if(INSTANCE == null){
-                    INSTANCE = new MyTelnet(address, port);
+                    INSTANCE = new TelnetConnection(address, port);
                 }
             }
          }
@@ -80,6 +80,31 @@ public class MyTelnet
     	}
         return INSTANCE.telnetClient;
     }
+
+    public static boolean isConnected(){
+    	if(INSTANCE.telnetClient.isConnected()){
+    		return true;
+    	}
+    	return false;
+    	
+    }
+    
+	
+	public InputStream getInputStream() {
+		// TODO Auto-generated method stub
+		return INSTANCE.telnetClient.getInputStream();
+	}
+	
+	
+	public OutputStream getOutputStream() {
+		// TODO Auto-generated method stub
+		return INSTANCE.telnetClient.getOutputStream();
+	}
+
+	public static TelnetConnection getInstance() {
+		// TODO Auto-generated method stub
+		return INSTANCE;
+	}
     
     
 }
