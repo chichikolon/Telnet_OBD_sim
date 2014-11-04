@@ -3,6 +3,7 @@ package examples.telnet;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.net.telnet.TelnetClient;
@@ -65,7 +66,6 @@ public class SetupTelnetConnection implements Runnable {
 		do {
 			System.out.println("telnetStatus.getCommandList(): " + telnetStatus.getCommandList());
 			for (Command commandObj: telnetStatus.getCommandList()){
-				
 				if (commandObj.getOutput() == null){
 					String command = commandObj.getCommand();
 					String output = SetupReadWrite.sendCommand(command);

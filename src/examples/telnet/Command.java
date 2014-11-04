@@ -4,7 +4,7 @@ package examples.telnet;
 public class Command  {
 
 	private String command;
-	private String output;
+	private String output = null;
 	
 	public Command(String command){
 		this.command = command;

@@ -2,10 +2,11 @@ package examples.telnet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CommandList{
 
-	private List<Command> commandList = new ArrayList<Command >();
+	private List<Command> commandList = new CopyOnWriteArrayList<Command>();
     
 	public synchronized List<Command> getCommandList(){
 		return this.commandList;
@@ -28,7 +29,7 @@ public class CommandList{
 //	}
 	
 	public void removeCommand(Command command){
-		this.commandList.remove(command);
+		this.getCommandList().remove(command);
 		
 		
 //		this.getCommandList().remove(command);
