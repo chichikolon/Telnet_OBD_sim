@@ -6,33 +6,10 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TelnetStatus {
+public class TelnetStatus extends CommandList {
     private TelnetConnection telnetConnection;
 	private InputStream inputStream;
 	private PrintStream printStream;
-	
-	private List<Command> commandList = new ArrayList<Command >();
-    
-	public List<Command> getCommandList(){
-		return this.commandList;
-	}
-	 
-	
-	public Command setCommandToList(String command){
-		Command commandObj = new Command(command);
-		this.commandList.add(commandObj);
-		return commandObj;
-	}
-	
-	public Command getCommandByName(String command){
-		for(Command commandFromList: this.commandList){
-			if (commandFromList.equals(command)){
-				return commandFromList; 
-			}
-		}
-		return null;
-	}
-	
 	
     public TelnetConnection getTelentInstance() {
         return this.telnetConnection;

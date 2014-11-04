@@ -28,12 +28,12 @@ public class Command  {
 		return "Command: "+ command + "\nOutput: " + output;
 	}
 	
-	@Override
-	public boolean equals(Object command) {
-		// TODO Auto-generated method stub
-		return this.getCommand().equals(command);
-		
-	}
+//	@Override
+//	public boolean equals(Object command) {
+//		// TODO Auto-generated method stub
+//		return this.getCommand().equals(command);
+//		
+//	}
 	
 	
 }

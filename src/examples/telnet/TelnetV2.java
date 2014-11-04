@@ -17,21 +17,42 @@ public class TelnetV2{
 	
 	public TelnetV2(String address, int port) {
 		
-		SetupTelnetConnection setupTelnetConnection =  
+		SetupTelnetConnection telnetConnection =  
 				new SetupTelnetConnection(telnetStatus,
 				address,
 				port);
 		
 		
-		Thread connectThread = new Thread(setupTelnetConnection);
+		Thread connectThread = new Thread(telnetConnection);
 		connectThread.start();
 	}
 	
 	public void sendCommand(final String command) {
-		SetupReadWrite setupReadWrite = 
-				new SetupReadWrite(telnetStatus, command);
-		Thread sendThread = new Thread (setupReadWrite);
-		sendThread.start();
+		
+		Command commandObj = telnetStatus.setCommandToList(command);
+		
+		String output;
+		do {
+			synchronized(commandObj){
+				try {
+					commandObj.wait();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				output = commandObj.getOutput();
+			}
+		} while (output == null);
+		//TODO: After read this commandObj You can remove it from list
+		System.out.println("Moj output: "+ output);
+		telnetStatus.removeCommand(commandObj);
+		
+		
+		
+//		SetupReadWrite setupReadWrite = 
+//				new SetupReadWrite(telnetStatus, command);
+//		Thread sendThread = new Thread (setupReadWrite);
+//		sendThread.start();
 		
 	}
 		

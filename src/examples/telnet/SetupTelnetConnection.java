@@ -2,6 +2,8 @@ package examples.telnet;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.net.telnet.TelnetClient;
 
@@ -51,7 +53,7 @@ public class SetupTelnetConnection implements Runnable {
 				SetupReadWrite.sendCommand("?");
 				SetupReadWrite.sendCommand("AT SP 0");
 				
-				telnetStatus.notify();
+				telnetStatus.notifyAll();
 				
 			}
 			catch (Exception e) {
@@ -59,7 +61,29 @@ public class SetupTelnetConnection implements Runnable {
 				
 			}	
 		}
+		
+		do {
+			System.out.println("telnetStatus.getCommandList(): " + telnetStatus.getCommandList());
+			for (Command commandObj: telnetStatus.getCommandList()){
+				
+				if (commandObj.getOutput() == null){
+					String command = commandObj.getCommand();
+					String output = SetupReadWrite.sendCommand(command);
+					synchronized(commandObj){
+						commandObj.setOutput(output);
+						commandObj.notify();
+					}
+				} continue;
+				
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} while (true);
 	}
+}
 		
 
-}
