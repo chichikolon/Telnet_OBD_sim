@@ -20,7 +20,7 @@ public class TelnetStatus extends CommandList {
     }
     
     public boolean isConnected(){
-    	return this.telnetConnection.isConnected();
+    	return TelnetConnection.isConnected();
     }
 
 	public void setInputStream(InputStream in) {
@@ -43,7 +43,7 @@ public class TelnetStatus extends CommandList {
 	
 	
 	public void printConnection(){
-		System.out.println("IsConnected: " + isConnected() );
+		System.out.println("IsConnected: " + this.isConnected() );
 	}
 	
 	

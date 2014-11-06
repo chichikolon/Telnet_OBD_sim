@@ -1,68 +1,47 @@
 package examples.telnet;
 
-public class SetupReadWrite implements Runnable {
+import log4j.MyLogger;
 
-	private TelnetStatus telnetStatus;
-	private String command;
-	
-	
-	
-	
-	public SetupReadWrite(TelnetStatus telnetStatus, String command){
-		this.telnetStatus = telnetStatus;
-		this.command = command;
-	}
+class SetupReadWrite {
+
+//	private TelnetStatus telnetStatus;
+//	private String command;
+//
+//	public TelnetStatus getTelnetStatus() {
+//		return telnetStatus;
+//	}
+//
+//
+//	public void setTelnetStatus(TelnetStatus telnetStatus) {
+//		this.telnetStatus = telnetStatus;
+//	}
+//	
+//	
+//	
+//	public SetupReadWrite(TelnetStatus telnetStatus, String command){
+//		this.setTelnetStatus(telnetStatus);
+//		this.command = command;
+//	}
 	
 	
 	static String sendCommand(String command){
 		String output = "";
 		
 		try {
-			System.out.println("command: "+ command);
+			MyLogger.log.info("command: "+ command);
 			TelnetWrite.write(command);
 			do {
 				output =  TelnetRead.readUntil(TelnetV2.PROMPT);
-			} while (output == "");
+			} while (output == "" & !Thread.currentThread().isInterrupted());
 			output = output.substring(command.length(), output.length()-2);
 			output = output.replaceAll("\\s+","");
-			System.out.println("output: "+ output);
-			
-		
+			MyLogger.log.debug("output: "+ output);
 		}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
 		return output;
 	}
-	
-	@Override
-	public void run() {
-		synchronized(telnetStatus){
-			// TODO Auto-generated method stub
-			
-			if (!telnetStatus.isConnected()){	
-				try {
-					System.out.println("waiting to get notified at time:"+System.currentTimeMillis());
-	                telnetStatus.wait();
-	                
-	                
-	                while(true){
-	                	if (!telnetStatus.isConnected()){
-	                	
-	                	
-		                	Command c = telnetStatus.setCommandToList(command);
-		                	String output = this.sendCommand(command);
-		                	c.setOutput(output);
-	                	}
-	                }
-	                
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		}
-			
-	}
+
 }
 

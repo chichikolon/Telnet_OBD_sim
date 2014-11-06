@@ -19,20 +19,8 @@ public class CommandList{
 		return commandObj;
 	}
 	
-//	public Command getCommandByName(String command){
-//		for(Command commandFromList: this.getCommandList()){
-//			if (commandFromList.equals(command)){
-//				return commandFromList; 
-//			}
-//		}
-//		return null;
-//	}
-	
 	public void removeCommand(Command command){
 		this.getCommandList().remove(command);
-		
-		
-//		this.getCommandList().remove(command);
 	}
 	
 	

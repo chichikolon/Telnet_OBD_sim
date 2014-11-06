@@ -31,7 +31,6 @@ public class SetupTelnetConnection implements Runnable {
 		this.telnetStatus = telnetStatus;
 	}
 	
-	
 	@Override
 	public void run() {
 		synchronized(telnetStatus){
@@ -64,7 +63,7 @@ public class SetupTelnetConnection implements Runnable {
 		}
 		
 		do {
-			System.out.println("telnetStatus.getCommandList(): " + telnetStatus.getCommandList());
+//			System.out.println("telnetStatus.getCommandList(): " + telnetStatus.getCommandList());
 			for (Command commandObj: telnetStatus.getCommandList()){
 				if (commandObj.getOutput() == null){
 					String command = commandObj.getCommand();
@@ -77,12 +76,13 @@ public class SetupTelnetConnection implements Runnable {
 				
 			}
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(200);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+//				e.printStackTrace();
+				break;
 			}
-		} while (true);
+		} while (!Thread.currentThread().isInterrupted());
 	}
 }
 		

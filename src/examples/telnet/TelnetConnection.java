@@ -18,7 +18,7 @@ import org.omg.CORBA.TIMEOUT;
 public class TelnetConnection
 {
 	
-	private volatile static TelnetConnection INSTANCE;
+	private static TelnetConnection INSTANCE;
     
     private final TelnetClient telnetClient = new TelnetClient();
 
@@ -82,13 +82,18 @@ public class TelnetConnection
     }
 
     public static boolean isConnected(){
-    	if(INSTANCE.telnetClient.isConnected()){
-    		return true;
-    	}
-    	return false;
-    	
+    	return INSTANCE.telnetClient.isConnected();
     }
     
+    public static void disconnect(){
+    	try {
+			getConnection().disconnect();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    }
 	
 	public InputStream getInputStream() {
 		// TODO Auto-generated method stub
