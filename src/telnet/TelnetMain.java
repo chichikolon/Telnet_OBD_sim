@@ -108,7 +108,8 @@ public class TelnetMain{
 		try {
 			
 			final TelnetMain telnet = new TelnetMain("192.168.1.20", 2001);			
-//			telnet.disconnect();
+
+			
 			for (int i = 0; i<10*1; i++){
 				final String j = Integer.toString(i);
 				
