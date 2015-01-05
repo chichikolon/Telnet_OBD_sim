@@ -22,7 +22,7 @@ public class TelnetConnection
     private TelnetConnection(String address, int port)
     {
         // Initialize the connection
-        int TIMEOUT = 3;
+        int TIMEOUT = 5;
 //    	getTelnetClient().setConnectTimeout(TIMEOUT);
     	telnetClient.setConnectTimeout(TIMEOUT);
         

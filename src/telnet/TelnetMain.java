@@ -1,66 +1,78 @@
 package telnet;
 
-
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
+import org.omg.CORBA.TIMEOUT;
+
+import lib.log4j.MyLogger;
 import telnet.commandlist.Command;
 import telnet.connection.SetupTelnetConnection;
 import telnet.connection.TelnetConnection;
 import telnet.connection.TelnetStatus;
-import lib.log4j.MyLogger;
 
-
-public class TelnetMain{
-	private static TelnetStatus telnetStatus = new TelnetStatus();
+public class TelnetMain {
+	private int TELENTTIMEOUT = 20;
+	private TelnetStatus telnetStatus = new TelnetStatus();
 	public static final String PROMPT = ">";
 
-	
-	private Thread connectThread;
-	
-	
-	public void close(){
-		connectThread.interrupt();
+	private ExecutorService executorService;
+
+	public void close() {
+		executorService.shutdownNow();
 	}
-	
+
 	public TelnetStatus getTelnetStatus() {
 		return telnetStatus;
 	}
 
-	public void setTelnetStatus(TelnetStatus telnetStatus) {
-		TelnetMain.telnetStatus = telnetStatus;
-	}
-	
 	public TelnetMain(String address, int port) {
-		
-		connectThread = new Thread( 
-				new SetupTelnetConnection(
-					getTelnetStatus(),
-					address,
-					port), 
-				"Main-Send-CommandToList-Thread");
-		connectThread.start();
-		
+
+		executorService = Executors.newSingleThreadExecutor();
+		executorService.execute(new SetupTelnetConnection(getTelnetStatus(),
+				address, port));
+
+		System.out.println("Terminated: " + executorService.isShutdown());
+		executorService.shutdown();
+		MyLogger.log.info("Waiting to connect");
+		while (!executorService.isShutdown()) {
+			System.out.println("Terminated: " + executorService.isShutdown());
+			MyLogger.log.info(".");
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} 			
+			
+			
+		}
+
 	}
-	
+
 	public void sendCommand(final String command) {
-		// This add only given to the command list. But the real execution is done in SetupTelnetConnection
+		// This add only given to the command list. But the real execution is
+		// done in SetupTelnetConnection
 		//
-		
+
 		final Command commandObj = getTelnetStatus().setCommandToList(command);
-		
+
 		ExecutorService executorService = Executors.newSingleThreadExecutor();
-		Future<String> future = executorService.submit(new Callable<String>(){
-		    public String call() throws Exception {
-		    	//Command is added to ArrayList which is read in other Thread. 
+		Future<String> future = executorService.submit(new Callable<String>() {
+			@Override
+			public String call() throws Exception {
+				// Command is added to ArrayList which is read in other Thread.
 				String output;
 				do {
-					synchronized(commandObj){
+					synchronized (commandObj) {
 						try {
-							//Wait read command output until in main thread command will be send 
+							// Wait read command output until in main thread
+							// command will be send
 							commandObj.wait();
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
@@ -68,15 +80,15 @@ public class TelnetMain{
 						}
 						output = commandObj.getOutput();
 					}
-					
+
 				} while (output == null & getTelnetStatus().isConnected());
 				return output;
-		    }
+			}
 		});
-		
-		//TODO: After read commandObj, You can remove it from list
+
+		// TODO: After read commandObj, You can remove it from list
 		try {
-			MyLogger.log.debug("My output: "+ future.get());
+			MyLogger.log.debug("My output: " + future.get());
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -87,36 +99,30 @@ public class TelnetMain{
 		executorService.shutdown();
 		getTelnetStatus().removeCommand(commandObj);
 	}
-		
-		
+
 	public void disconnect() {
 		this.close();
 		try {
 			TelnetConnection.disconnect();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		MyLogger.log.info("Goodbay!");
+		MyLogger.log.info("Goodbay!Tschuss");
 	}
-	
-	
-	
-	public static void main(String[] args) {
-		
-		
-		try {
-			
-			final TelnetMain telnet = new TelnetMain("192.168.1.20", 2001);			
 
-			
-			for (int i = 0; i<10*1; i++){
+	public static void main(String[] args) {
+
+		try {
+
+			final TelnetMain telnet = new TelnetMain("192.168.1.20", 2001);
+
+			for (int i = 0; i < 10 * 1; i++) {
 				final String j = Integer.toString(i);
-				
+
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						telnet.sendCommand("01 "+j );
+						telnet.sendCommand("01 " + j);
 					}
 				}).start();
 			}
@@ -124,11 +130,9 @@ public class TelnetMain{
 			telnet.sendCommand("04 00");
 			telnet.sendCommand("01 00");
 			telnet.disconnect();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	
 }

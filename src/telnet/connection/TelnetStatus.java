@@ -3,8 +3,6 @@ package telnet.connection;
 
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import telnet.commandlist.CommandList;
 

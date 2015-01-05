@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 
 import telnet.commandlist.Command;
-import telnet.connection.TelnetStatus;
 
 public class SetupTelnetConnection implements Runnable {
 	
@@ -29,7 +28,7 @@ public class SetupTelnetConnection implements Runnable {
 	
 	@Override
 	public void run() {
-		synchronized(telnetStatus){
+//		synchronized(telnetStatus){
 			try {
 				TelnetConnection.getConnection(this.address, this.port);
 				telnetStatus.setTelnetInstace(TelnetConnection.getInstance());
@@ -49,13 +48,13 @@ public class SetupTelnetConnection implements Runnable {
 				TelnetSendCommand.sendCommand("?");
 				TelnetSendCommand.sendCommand("AT SP 0");
 				
-				telnetStatus.notifyAll();
+//				telnetStatus.notifyAll();
 				
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 				
-			}	
+//			}	
 		}
 		
 		do {

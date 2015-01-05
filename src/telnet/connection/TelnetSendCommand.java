@@ -1,7 +1,7 @@
 package telnet.connection;
 
-import telnet.TelnetMain;
 import lib.log4j.MyLogger;
+import telnet.TelnetMain;
 
 class TelnetSendCommand {
 	
