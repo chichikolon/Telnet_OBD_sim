@@ -11,16 +11,16 @@ public class TelnetStatus extends CommandList {
 	private InputStream inputStream;
 	private PrintStream printStream;
 	
-    public TelnetConnection getTelentInstance() {
+    public synchronized TelnetConnection getTelentInstance() {
         return this.telnetConnection;
     }
  
-    public void setTelnetInstace(TelnetConnection instance) {
+    public synchronized void setTelnetInstace(TelnetConnection instance) {
         this.telnetConnection = instance;
     }
     
     public boolean isConnected(){
-    	return TelnetConnection.isConnected();
+    	return getTelentInstance().isConnected();
     }
 
 	public void setInputStream(InputStream in) {

@@ -1,11 +1,39 @@
 package telnet.commandlist;
 
+import java.util.Comparator;
+
+
+
+
 
 public class Command  {
 
+	enum CommandPriority implements Comparable<CommandPriority> {
+		CRITICAL(0), HIGHT(1), MEDIUM(2), LOW(3);
+
+		private int priority;
+
+		private CommandPriority(int priority) {
+			this.priority = priority;
+		}
+
+		public int getPriorityValue() {
+			return this.priority;
+		}
+
+	}
+	
+	
+	
+	
+	
 	private String command;
 	private String output = null;
+	private CommandPriority priority = CommandPriority.MEDIUM; 
+
+			
 	
+			
 	public Command(String command){
 		this.command = command;
 	}
@@ -26,6 +54,14 @@ public class Command  {
 	public String toString() {
 		// TODO Auto-generated method stub
 		return "Command: "+ command + "\nOutput: " + output;
+	}
+
+	public CommandPriority getPriority() {
+		return priority;
+	}
+
+	public void setPriority(CommandPriority priority) {
+		this.priority = priority;
 	}
 	
 //	@Override

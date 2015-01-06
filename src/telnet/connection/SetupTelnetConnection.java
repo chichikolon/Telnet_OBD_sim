@@ -3,6 +3,7 @@ package telnet.connection;
 import java.io.InputStream;
 import java.io.PrintStream;
 
+import lib.log4j.MyLogger;
 import telnet.commandlist.Command;
 
 public class SetupTelnetConnection implements Runnable {
@@ -10,16 +11,17 @@ public class SetupTelnetConnection implements Runnable {
 	String address = "192.168.1.20";
 	int port = 2001;
 	
-	TelnetStatus telnetStatus;
+	private TelnetStatus telnetStatus;
 	
 	public SetupTelnetConnection(TelnetStatus telnetStatus, String address, int port) {
+		this(telnetStatus);
 		if (address != null ){
 			this.address = address;
 		}
 		if (port != 0){
 			this.port = port;
 		}
-		this.telnetStatus = telnetStatus;
+		
 	}
 	
 	public SetupTelnetConnection(TelnetStatus telnetStatus) {
@@ -33,6 +35,10 @@ public class SetupTelnetConnection implements Runnable {
 				TelnetConnection.getConnection(this.address, this.port);
 				telnetStatus.setTelnetInstace(TelnetConnection.getInstance());
 				
+				if (!telnetStatus.isConnected()){
+					MyLogger.log.error("Not connected. Check IP and port adress.");
+					System.exit(1);
+				}
 //					// Get input and output stream references
 				
 				
@@ -57,27 +63,7 @@ public class SetupTelnetConnection implements Runnable {
 //			}	
 		}
 		
-		do {
-//			System.out.println("telnetStatus.getCommandList(): " + telnetStatus.getCommandList());
-			for (Command commandObj: telnetStatus.getCommandList()){
-				if (commandObj.getOutput() == null){
-					String command = commandObj.getCommand();
-					String output = TelnetSendCommand.sendCommand(command);
-					synchronized(commandObj){
-						commandObj.setOutput(output);
-						commandObj.notify();
-					}
-				} continue;
-				
-			}
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-//				e.printStackTrace();
-				break;
-			}
-		} while (!Thread.currentThread().isInterrupted());
+
 	}
 }
 		

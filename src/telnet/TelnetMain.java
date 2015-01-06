@@ -1,6 +1,5 @@
 package telnet;
 
-import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -8,23 +7,26 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.omg.CORBA.TIMEOUT;
-
 import lib.log4j.MyLogger;
 import telnet.commandlist.Command;
+import telnet.connection.CommandWorker;
 import telnet.connection.SetupTelnetConnection;
 import telnet.connection.TelnetConnection;
 import telnet.connection.TelnetStatus;
 
 public class TelnetMain {
-	private int TELENTTIMEOUT = 20;
 	private TelnetStatus telnetStatus = new TelnetStatus();
 	public static final String PROMPT = ">";
 
-	private ExecutorService executorService;
+	private ExecutorService executorServiceStartup = Executors.newSingleThreadExecutor();
+	private ExecutorService executorServiceCommandsWorker = Executors.newSingleThreadExecutor();
+	private ExecutorService executorServiceSendCommand = Executors.newSingleThreadExecutor();
+	
 
 	public void close() {
-		executorService.shutdownNow();
+		executorServiceStartup.shutdownNow();
+		executorServiceCommandsWorker.shutdownNow();
+		executorServiceSendCommand.shutdownNow();
 	}
 
 	public TelnetStatus getTelnetStatus() {
@@ -33,25 +35,35 @@ public class TelnetMain {
 
 	public TelnetMain(String address, int port) {
 
-		executorService = Executors.newSingleThreadExecutor();
-		executorService.execute(new SetupTelnetConnection(getTelnetStatus(),
-				address, port));
-
-		System.out.println("Terminated: " + executorService.isShutdown());
-		executorService.shutdown();
+		
+		// Part responsible for setup telnet connection
+		executorServiceStartup.execute(new SetupTelnetConnection(
+				getTelnetStatus(),
+				address, 
+				port)
+				);
+		
 		MyLogger.log.info("Waiting to connect");
-		while (!executorService.isShutdown()) {
-			System.out.println("Terminated: " + executorService.isShutdown());
-			MyLogger.log.info(".");
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} 			
-			
-			
+		executorServiceStartup.shutdown();
+		MyLogger.log.debug("Wait to terminate all telnet setup tasks");
+		while (!executorServiceStartup.isTerminated()) {
+			MyLogger.log.debug(".");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				this.close();
+			}
 		}
+		
+		
+		// Part responsible for start command queue worker 
+		executorServiceCommandsWorker.execute(new CommandWorker(getTelnetStatus()));
+		MyLogger.log.info("Starting command queue worker");
+		executorServiceCommandsWorker.shutdown();
+				
+
 
 	}
 
@@ -62,8 +74,7 @@ public class TelnetMain {
 
 		final Command commandObj = getTelnetStatus().setCommandToList(command);
 
-		ExecutorService executorService = Executors.newSingleThreadExecutor();
-		Future<String> future = executorService.submit(new Callable<String>() {
+		Future<String> future = executorServiceSendCommand.submit(new Callable<String>() {
 			@Override
 			public String call() throws Exception {
 				// Command is added to ArrayList which is read in other Thread.
@@ -96,7 +107,7 @@ public class TelnetMain {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		executorService.shutdown();
+		executorServiceSendCommand.shutdown();
 		getTelnetStatus().removeCommand(commandObj);
 	}
 
@@ -116,7 +127,7 @@ public class TelnetMain {
 
 			final TelnetMain telnet = new TelnetMain("192.168.1.20", 2001);
 
-			for (int i = 0; i < 10 * 1; i++) {
+			for (int i = 0; i < 1 * 1; i++) {
 				final String j = Integer.toString(i);
 
 				new Thread(new Runnable() {

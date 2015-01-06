@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import lib.log4j.MyLogger;
 import lib.org.apache.commons.net.telnet.TelnetClient;
 
 
@@ -23,7 +24,6 @@ public class TelnetConnection
     {
         // Initialize the connection
         int TIMEOUT = 5;
-//    	getTelnetClient().setConnectTimeout(TIMEOUT);
     	telnetClient.setConnectTimeout(TIMEOUT);
         
     	this.mAddress = address;
@@ -32,6 +32,7 @@ public class TelnetConnection
     	if(!telnetClient.isConnected()){
 	    	do{
 	    		try {
+	    			MyLogger.log.info(".");
 	    			telnetClient.connect(this.mAddress, this.mPort);
 	    		} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -42,7 +43,7 @@ public class TelnetConnection
 						b.printStackTrace();
 						break;
 					}
-		    		TIMEOUT--;
+		    		TIMEOUT-=1;
 	    		}
 	    	} while (!telnetClient.isConnected() && TIMEOUT>=0);
     	}
@@ -50,33 +51,34 @@ public class TelnetConnection
 
     // Static getter
     public static TelnetClient getConnection(String address, int port)
+    //Get current telnet connection OR make new one
     {
-    	if(INSTANCE == null){
+    	if(getInstance() == null){
             synchronized(TelnetConnection.class){
                 //double checking Singleton instance
-                if(INSTANCE == null){
-                    INSTANCE = new TelnetConnection(address, port);
+                if(getInstance() == null){
+                    setInstance(new TelnetConnection(address, port));
                 }
             }
          }
-         return INSTANCE.telnetClient;
+         return getInstance().telnetClient;
     }
     
     public static TelnetClient getConnection()
     {
-    	if(INSTANCE == null){
+    	if(getInstance() == null){
     		throw new RuntimeException("Unable to connect. Start with getConnection(String address, int port)");
     		
     	}
     	
-    	if(!INSTANCE.telnetClient.isConnected()){
+    	if(!getInstance().telnetClient.isConnected()){
     		throw new RuntimeException("Unable to connect. Start with getConnection(String address, int port)");
     	}
-        return INSTANCE.telnetClient;
+        return getInstance().telnetClient;
     }
 
     public static boolean isConnected(){
-    	return INSTANCE.telnetClient.isConnected();
+    	return getInstance().telnetClient.isConnected();
     }
     
     public static void disconnect(){
@@ -91,16 +93,21 @@ public class TelnetConnection
 	
 	public InputStream getInputStream() {
 		// TODO Auto-generated method stub
-		return INSTANCE.telnetClient.getInputStream();
+		return getInstance().telnetClient.getInputStream();
 	}
 	
 	
 	public OutputStream getOutputStream() {
 		// TODO Auto-generated method stub
-		return INSTANCE.telnetClient.getOutputStream();
+		return getInstance().telnetClient.getOutputStream();
 	}
 
-	public static TelnetConnection getInstance() {
+	public synchronized static void setInstance(TelnetConnection instance) {
+		// TODO Auto-generated method stub
+		INSTANCE = instance;
+	}
+	
+	public synchronized static TelnetConnection getInstance() {
 		// TODO Auto-generated method stub
 		return INSTANCE;
 	}
