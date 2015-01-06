@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import lib.log4j.MyLogger;
 import telnet.commandlist.Command;
+import telnet.commandlist.CommandPriority;
 import telnet.connection.CommandWorker;
 import telnet.connection.SetupTelnetConnection;
 import telnet.connection.TelnetConnection;
@@ -20,13 +21,13 @@ public class TelnetMain {
 
 	private ExecutorService executorServiceStartup = Executors.newSingleThreadExecutor();
 	private ExecutorService executorServiceCommandsWorker = Executors.newSingleThreadExecutor();
-	private ExecutorService executorServiceSendCommand = Executors.newSingleThreadExecutor();
+//	private ExecutorService executorServiceSendCommand = Executors.newSingleThreadExecutor();
 	
 
 	public void close() {
 		executorServiceStartup.shutdownNow();
 		executorServiceCommandsWorker.shutdownNow();
-		executorServiceSendCommand.shutdownNow();
+//		executorServiceSendCommand.shutdownNow();
 	}
 
 	public TelnetStatus getTelnetStatus() {
@@ -49,7 +50,7 @@ public class TelnetMain {
 		while (!executorServiceStartup.isTerminated()) {
 			MyLogger.log.debug(".");
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(500);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -67,13 +68,24 @@ public class TelnetMain {
 
 	}
 
-	public void sendCommand(final String command) {
+	
+	public void sendCommand(final String command, final CommandPriority priority) {
 		// This add only given to the command list. But the real execution is
 		// done in SetupTelnetConnection
 		//
+		final Command commandObj = getTelnetStatus().setCommandToList(command, priority);
+		_exceuteSendCommand(commandObj);
+	}
+	
+	public void sendCommand(final String command) {
+
 
 		final Command commandObj = getTelnetStatus().setCommandToList(command);
+		_exceuteSendCommand(commandObj);
+	}
 
+	private void _exceuteSendCommand(final Command commandObj) {
+		ExecutorService executorServiceSendCommand = Executors.newSingleThreadExecutor();
 		Future<String> future = executorServiceSendCommand.submit(new Callable<String>() {
 			@Override
 			public String call() throws Exception {
@@ -91,7 +103,6 @@ public class TelnetMain {
 						}
 						output = commandObj.getOutput();
 					}
-
 				} while (output == null & getTelnetStatus().isConnected());
 				return output;
 			}
@@ -108,7 +119,6 @@ public class TelnetMain {
 			e.printStackTrace();
 		}
 		executorServiceSendCommand.shutdown();
-		getTelnetStatus().removeCommand(commandObj);
 	}
 
 	public void disconnect() {
@@ -127,7 +137,7 @@ public class TelnetMain {
 
 			final TelnetMain telnet = new TelnetMain("192.168.1.20", 2001);
 
-			for (int i = 0; i < 1 * 1; i++) {
+			for (int i = 0; i < 1 * 2; i++) {
 				final String j = Integer.toString(i);
 
 				new Thread(new Runnable() {
@@ -138,8 +148,10 @@ public class TelnetMain {
 				}).start();
 			}
 
-			telnet.sendCommand("04 00");
-			telnet.sendCommand("01 00");
+			telnet.sendCommand("04 00", CommandPriority.CRITICAL);
+			telnet.sendCommand("01 00", CommandPriority.CRITICAL);
+			telnet.sendCommand("02 00", CommandPriority.LOW);
+			telnet.sendCommand("03 00");
 			telnet.disconnect();
 		} catch (Exception e) {
 			e.printStackTrace();

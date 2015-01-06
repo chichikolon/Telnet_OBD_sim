@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 
 import lib.log4j.MyLogger;
-import telnet.commandlist.Command;
 
 public class SetupTelnetConnection implements Runnable {
 	
